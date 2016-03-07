@@ -27,22 +27,121 @@ var GaussianElimination;
             this.workspace.html('');
             this.initialMatrix = new Matrix(this.workspace, numbers, divider);
             this.initialMatrix.render();
-            this.nextStep();
+            this.nextStep(null);
         };
-        Core.prototype.nextStep = function () {
-            var operation = new Operation();
+        Core.prototype.nextStep = function (previousStep) {
+            var that = this;
+            var operation = new Operation(this.workspace, this.initialMatrix.rows());
+            operation.render();
+            operation.getInput(function (operations) {
+                var matrix = new Matrix(previousStep != null ? previousStep.matrix() : this.initialMatrix, operations);
+            });
         };
         return Core;
     }());
     GaussianElimination.Core = Core;
     var Operation = (function () {
-        function Operation() {
+        function Operation(target, rowCount) {
+            this.target = target;
+            this.errorManager = new ErrorManager(this.target);
+            this.rowCount = rowCount;
+            this.usedRows = [];
+            this.operations = [];
+            this.createNode();
         }
+        Operation.prototype.render = function () {
+            this.input = HTML.textInput('Enter operation');
+            this.input.addClass('single-operation');
+            this.node.find('.operations').append(this.input);
+            this.target.append(this.node);
+            this.input.focus();
+        };
+        Operation.prototype.getInput = function (callback) {
+            this.callback = callback;
+            var that = this;
+            this.input.keyup(function (e) {
+                if (e.which == 13) {
+                    if (that.validateOperation()) {
+                        that.addOperation();
+                    }
+                }
+            });
+        };
+        Operation.prototype.validateOperation = function () {
+            var value = this.input.val().toLowerCase().trim().replace(/\s/g, '');
+            var regexp = new RegExp("^(r\\d+[/\*]\\d+(\\.\\d+)?|r\\d+[\+\-](\\d+(\\.\\d+)?|r\\d+|\\d+(\\.\\d+)?r\\d+))$");
+            if (!regexp.exec(value)) {
+                this.errorManager.error('Entered operation does not match the pattern!');
+                this.input.addClass('error-input');
+                return false;
+            }
+            var rowRegexp = new RegExp("r(\\d+)", "g");
+            var rows = value.match(rowRegexp);
+            var rowNums = [];
+            var previousRow = 0;
+            for (var i = 0; i < rows.length; i++) {
+                var row = parseInt(rows[i].substr(1));
+                rowNums.push(row);
+                if ($.inArray(row, this.usedRows) != -1) {
+                    this.errorManager.error('This row has already appeared in a neighbouring operation: ' + row + '. Perform the same operation in the next step to avoid ambiguity');
+                    this.input.addClass('error-input');
+                    return false;
+                }
+                if (row < 1 || row > this.rowCount) {
+                    this.errorManager.error('Specified row does not exist: ' + row);
+                    this.input.addClass('error-input');
+                    return false;
+                }
+                if (previousRow == row) {
+                    this.errorManager.error('Same row appears twice: ' + row);
+                    this.input.addClass('error-input');
+                    return false;
+                }
+                previousRow = row;
+            }
+            if (!!new RegExp("/").exec(value)) {
+                var zeroRegexp = new RegExp("\\d+(\\.\\d+)?$");
+                var result = value.match(zeroRegexp);
+                if (parseFloat(result) == 0) {
+                    this.errorManager.error('Division by zero!');
+                    this.input.addClass('error-input');
+                    return false;
+                }
+            }
+            this.usedRows.push(rowNums[0]);
+            this.input.removeClass('error-input');
+            this.errorManager.clear();
+            return true;
+        };
+        Operation.prototype.addOperation = function () {
+            var value = this.input.val();
+            this.input.val('');
+            this.node.find('.operations').append('<div class="single-operation">' + value + '</div>');
+            this.operations.push(value.toLowerCase().trim().replace(/\s/g, ''));
+            if (this.operations.length == this.rowCount) {
+                this.complete();
+            }
+        };
+        Operation.prototype.complete = function () {
+            this.input.remove();
+            this.callback(this.operations);
+        };
+        Operation.prototype.createNode = function () {
+            this.node = HTML.operationBlock();
+        };
         return Operation;
     }());
     var Step = (function () {
-        function Step() {
+        function Step(operation, matrix) {
+            this.operation = operation;
+            this.matrix = matrix;
         }
+        Step.prototype.operation = function () {
+            return this.operation;
+        };
+        Step.prototype.matrix = function () {
+            return this.matrix;
+        };
         return Step;
     }());
     GaussianElimination.Step = Step;
@@ -73,6 +172,15 @@ var GaussianElimination;
         };
         Matrix.prototype.render = function () {
             this.target.append(this.node);
+        };
+        Matrix.prototype.rows = function () {
+            return this.numbers.length;
+        };
+        Matrix.prototype.columns = function () {
+            return this.numbers[0].length;
+        };
+        Matrix.prototype.numbers = function () {
+            return this.numbers;
         };
         return Matrix;
     }());
@@ -113,7 +221,6 @@ var GaussianElimination;
             this.inputs[0][0].focus();
             for (var i = 0; i < this.a; i++) {
                 for (var k = 0; k < this.b + this.c; k++) {
-                    console.log(i + ', ' + k);
                     if (i == that.a - 1 && k == that.b + that.c - 1) {
                         this.inputs[i][k].keyup(function (e) {
                             if (e.which == 13) {
@@ -157,18 +264,18 @@ var GaussianElimination;
             if (pass)
                 this.errorManager.clear();
             else
-                this.errorManager.error('Fields highlighted in red do not contain valid integers');
+                this.errorManager.error('Fields highlighted in red do not contain valid numbers');
             return pass;
         };
         InputMatrix.prototype.isNumber = function (number) {
-            return !isNaN(parseInt(number));
+            return !isNaN(parseFloat(number));
         };
         InputMatrix.prototype.fetchNumbers = function () {
             var numbers = [];
             for (var i = 0; i < this.a; i++) {
                 numbers[i] = [];
                 for (var k = 0; k < this.b + this.c; k++) {
-                    numbers[i][k] = parseInt(this.inputs[i][k].val());
+                    numbers[i][k] = parseFloat(this.inputs[i][k].val());
                 }
             }
             this.callback(numbers, this.b);
@@ -278,6 +385,9 @@ var GaussianElimination;
             if (_class === void 0) { _class = ''; }
             return $('<div class="block matrix ' + _class + '"> <table><tbody></tbody></table></div>');
         };
+        HTML.operationBlock = function () {
+            return $('<div class="block operation"><div class="operations"></div><div class="arrow"></div></div>');
+        };
         HTML.tr = function () {
             return $('<tr></tr>');
         };
@@ -291,6 +401,9 @@ var GaussianElimination;
         };
         HTML.numberInput = function (placeholder) {
             return $('<input type="number" placeholder="' + placeholder + '">');
+        };
+        HTML.textInput = function (placeholder) {
+            return $('<input type="text" placeholder="' + placeholder + '">');
         };
         return HTML;
     }());

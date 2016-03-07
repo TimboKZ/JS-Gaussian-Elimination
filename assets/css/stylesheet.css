@@ -20,7 +20,16 @@ a {
     text-decoration: underline; }
 
 input {
-  font-family: 'PT Mono', monospace; }
+  font-family: 'PT Mono', monospace;
+  background-color: transparent;
+  border: solid 4px #6c5b7b;
+  text-align: center;
+  color: #f8b195; }
+  input:focus {
+    border-color: #f8b195;
+    outline: none; }
+  input.error-input {
+    border-color: #7b3840; }
 
 #wrapper {
   box-shadow: #29112f 0 0 20px;
@@ -54,6 +63,37 @@ input {
     vertical-align: middle;
     display: inline-block;
     margin: 10px; }
+    #workspace .block.operation .operations {
+      color: #f8b195; }
+      #workspace .block.operation .operations .single-operation {
+        background-color: rgba(0, 0, 0, 0.1);
+        margin: 0 0 10px 0;
+        text-align: center;
+        padding: 10px; }
+    #workspace .block.operation .arrow {
+      position: relative;
+      min-width: 100px;
+      height: 40px;
+      width: 100%; }
+      #workspace .block.operation .arrow:before, #workspace .block.operation .arrow:after {
+        position: absolute;
+        display: block;
+        content: ''; }
+      #workspace .block.operation .arrow:before {
+        background-color: #f8b195;
+        width: calc(100% - 5px);
+        height: 8px;
+        top: 16px; }
+      #workspace .block.operation .arrow:after {
+        border: 8px solid #f8b195;
+        border-bottom: none transparent;
+        border-left: none transparent;
+        -webkit-transform: rotate(45deg);
+                transform: rotate(45deg);
+        top: 6px;
+        right: 6px;
+        width: 20px;
+        height: 20px; }
     #workspace .block.matrix {
       border: solid 8px #6c5b7b;
       position: relative;
@@ -82,20 +122,13 @@ input {
         color: #f8b195;
         padding: 8px; }
         #workspace .block.matrix td.divider {
+          border-bottom-color: #6c5b7b;
           background-color: #6c5b7b;
           border-top-color: #6c5b7b;
-          border-bottom-color: #6c5b7b;
+          border-right-width: 16px;
+          border-left-width: 16px;
           padding: 0 4px; }
         #workspace .block.matrix td input {
-          background-color: transparent;
-          border: solid 4px #6c5b7b;
-          text-align: center;
-          color: #f8b195;
           width: 130px;
           padding: 8px;
           margin: -8px; }
-          #workspace .block.matrix td input:focus {
-            border-color: #f8b195;
-            outline: none; }
-          #workspace .block.matrix td input.error-input {
-            border-color: #7b3840; }
