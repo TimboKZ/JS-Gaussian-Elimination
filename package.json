@@ -1,0 +1,33 @@
+{
+  "name": "js-gaussian-eliniation",
+  "version": "1.0.0",
+  "description": "Gaussian elimination javascript",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/TimboKZ/JS-Gaussian-Elimination.git"
+  },
+  "keywords": [
+    "gaussian",
+    "elimination",
+    "visualiser"
+  ],
+  "author": "Timur Kuzhagaliyev",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/TimboKZ/JS-Gaussian-Elimination/issues"
+  },
+  "homepage": "https://github.com/TimboKZ/JS-Gaussian-Elimination#readme",
+  "devDependencies": {
+    "browser-sync": "^2.11.1",
+    "gulp": "^3.9.1",
+    "gulp-autoprefixer": "^3.1.0",
+    "gulp-clean-css": "^2.0.3",
+    "gulp-rename": "^1.2.2",
+    "gulp-sass": "^2.2.0",
+    "gulp-typescript": "^2.12.1"
+  }
+}
