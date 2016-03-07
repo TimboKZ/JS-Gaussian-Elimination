@@ -3,3 +3,37 @@
 
 @import "variables"
 @import "mixins"
+
+html, body
+  height: 100%
+
+body
+  background-color: $background
+  box-sizing: border-box
+  position: relative
+  padding: 20px
+  margin: 0
+
+a
+  text-decoration: none
+  color: $primary
+  &:hover
+    text-decoration-color: $secondary
+    text-decoration: underline
+
+#wrapper
+  box-shadow: $shadow 0 0 20px
+  font-family: 'PT Mono', monospace
+  background-color: $foreground
+  border-radius: 5px
+  position: absolute
+  height: calc(100% - 40px)
+  width: calc(100% - 40px)
+
+#buttons
+  background-color: $buttons-background
+  padding: 12px
+  a
+    background-color: $button-background
+    display: inline-block
+    padding: 8px
