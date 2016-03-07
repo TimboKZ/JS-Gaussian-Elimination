@@ -33,7 +33,50 @@ a
 #buttons
   background-color: $buttons-background
   padding: 12px
+  a, p
+    display: inline-block
+    margin: 0 12px 0 0
+    padding: 8px
   a
     background-color: $button-background
+  p
+    color: $primary
+    float: right
+
+#workspace
+  padding: 10px
+  .block
+    //background-color: $secondary
+    vertical-align: middle
     display: inline-block
-    padding: 8px
+    margin: 10px
+    &.matrix
+      border: solid 8px $secondary
+      position: relative
+      padding: 0 16px
+      &:before, &:after
+        background-color: $foreground
+        width: calc(100% - 16px)
+        position: absolute
+        display: block
+        z-index: 9999
+        content: ''
+        height: 8px
+        left: 8px
+      &:before
+        top: -8px
+      &:after
+        bottom: -8px
+      table
+        border-collapse: collapse
+      td
+        background-color: $button-background
+        border: solid 8px $foreground
+        text-align: center
+        color: $primary
+        padding: 8px
+        &.divider
+          background-color: $secondary
+          border-top-color: $secondary
+          border-bottom-color: $secondary
+          padding: 0 4px

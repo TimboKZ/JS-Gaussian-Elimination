@@ -30,7 +30,49 @@ a {
 #buttons {
   background-color: rgba(255, 255, 255, 0.1);
   padding: 12px; }
-  #buttons a {
-    background-color: rgba(0, 0, 0, 0.1);
+  #buttons a, #buttons p {
     display: inline-block;
+    margin: 0 12px 0 0;
     padding: 8px; }
+  #buttons a {
+    background-color: rgba(0, 0, 0, 0.1); }
+  #buttons p {
+    color: #f8b195;
+    float: right; }
+
+#workspace {
+  padding: 10px; }
+  #workspace .block {
+    vertical-align: middle;
+    display: inline-block;
+    margin: 10px; }
+    #workspace .block.matrix {
+      border: solid 8px #6c5b7b;
+      position: relative;
+      padding: 0 16px; }
+      #workspace .block.matrix:before, #workspace .block.matrix:after {
+        background-color: #355c7d;
+        width: calc(100% - 16px);
+        position: absolute;
+        display: block;
+        z-index: 9999;
+        content: '';
+        height: 8px;
+        left: 8px; }
+      #workspace .block.matrix:before {
+        top: -8px; }
+      #workspace .block.matrix:after {
+        bottom: -8px; }
+      #workspace .block.matrix table {
+        border-collapse: collapse; }
+      #workspace .block.matrix td {
+        background-color: rgba(0, 0, 0, 0.1);
+        border: solid 8px #355c7d;
+        text-align: center;
+        color: #f8b195;
+        padding: 8px; }
+        #workspace .block.matrix td.divider {
+          background-color: #6c5b7b;
+          border-top-color: #6c5b7b;
+          border-bottom-color: #6c5b7b;
+          padding: 0 4px; }
