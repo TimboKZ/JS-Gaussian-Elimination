@@ -71,6 +71,8 @@ input {
         top: -8px; }
       #workspace .block.matrix:after {
         bottom: -8px; }
+      #workspace .block.matrix.mini-inputs input {
+        width: 70px !important; }
       #workspace .block.matrix table {
         border-collapse: collapse; }
       #workspace .block.matrix td {
@@ -89,10 +91,11 @@ input {
           border: solid 4px #6c5b7b;
           text-align: center;
           color: #f8b195;
+          width: 130px;
           padding: 8px;
           margin: -8px; }
           #workspace .block.matrix td input:focus {
             border-color: #f8b195;
             outline: none; }
-          #workspace .block.matrix td input.error {
+          #workspace .block.matrix td input.error-input {
             border-color: #7b3840; }

@@ -75,6 +75,9 @@ input
         top: -8px
       &:after
         bottom: -8px
+      &.mini-inputs
+        input
+          width: 70px !important
       table
         border-collapse: collapse
       td
@@ -93,10 +96,11 @@ input
           border: solid 4px $secondary
           text-align: center
           color: $primary
+          width: 130px
           padding: 8px
           margin: -8px
           &:focus
             border-color: $primary
             outline: none
-          &.error
+          &.error-input
             border-color: $error
