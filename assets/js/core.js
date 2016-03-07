@@ -7,6 +7,7 @@ var GaussianElimination;
     var Core = (function () {
         function Core(workspace) {
             this.workspace = workspace;
+            this.steps = [];
         }
         Core.prototype.setup = function () {
             this.workspace.html('');
@@ -34,7 +35,12 @@ var GaussianElimination;
             var operation = new Operation(this.workspace, this.initialMatrix.rows());
             operation.render();
             operation.getInput(function (operations) {
-                var matrix = new Matrix(previousStep != null ? previousStep.matrix() : this.initialMatrix, operations);
+                var prevMatrix = previousStep != null ? previousStep.matrix() : that.initialMatrix;
+                var matrix = new Matrix(that.workspace, prevMatrix.getNumbers(), prevMatrix.getDivider(), operations);
+                matrix.render();
+                var step = new Step(operation, matrix);
+                that.steps.push(step);
+                that.nextStep(step);
             });
         };
         return Core;
@@ -46,6 +52,8 @@ var GaussianElimination;
             this.errorManager = new ErrorManager(this.target);
             this.rowCount = rowCount;
             this.usedRows = [];
+            this.usedFirstRows = [];
+            this.usedSecondRows = [];
             this.operations = [];
             this.createNode();
         }
@@ -82,7 +90,7 @@ var GaussianElimination;
             for (var i = 0; i < rows.length; i++) {
                 var row = parseInt(rows[i].substr(1));
                 rowNums.push(row);
-                if ($.inArray(row, this.usedRows) != -1) {
+                if ($.inArray(row, this.usedFirstRows) != -1) {
                     this.errorManager.error('This row has already appeared in a neighbouring operation: ' + row + '. Perform the same operation in the next step to avoid ambiguity');
                     this.input.addClass('error-input');
                     return false;
@@ -99,6 +107,11 @@ var GaussianElimination;
                 }
                 previousRow = row;
             }
+            if (!!new RegExp("[/\*]").exec(value) && $.inArray(row, this.usedRows) != -1) {
+                this.errorManager.error('This row has already appeared in a neighbouring operation: ' + row + '. Perform the same operation in the next step to avoid ambiguity');
+                this.input.addClass('error-input');
+                return false;
+            }
             if (!!new RegExp("/").exec(value)) {
                 var zeroRegexp = new RegExp("\\d+(\\.\\d+)?$");
                 var result = value.match(zeroRegexp);
@@ -109,6 +122,11 @@ var GaussianElimination;
                 }
             }
             this.usedRows.push(rowNums[0]);
+            this.usedFirstRows.push(rowNums[0]);
+            if (rowNums.length > 1) {
+                this.usedRows.push(rowNums[1]);
+                this.usedSecondRows.push(rowNums[1]);
+            }
             this.input.removeClass('error-input');
             this.errorManager.clear();
             return true;
@@ -146,18 +164,26 @@ var GaussianElimination;
     }());
     GaussianElimination.Step = Step;
     var Matrix = (function () {
-        function Matrix(target, numbers, divider) {
+        function Matrix(target, numbers, divider, operations) {
+            if (operations === void 0) { operations = null; }
             this.target = target;
             this.numbers = numbers;
             this.divider = divider;
+            if (operations != null) {
+                this.parseOperations(operations);
+            }
             this.createNode();
         }
+        Matrix.prototype.parseOperations = function (operations) {
+            for (var i = 0; i < operations.length; i++) {
+            }
+        };
         Matrix.prototype.createNode = function () {
             this.node = HTML.matrixBlock();
             for (var i = 0; i < this.numbers.length; i++) {
                 var tr = HTML.tr();
                 var numberCounter = 0;
-                for (var k = 0; k < this.numbers[0].length + 1; k++) {
+                for (var k = 0; k < this.numbers[0].length + (this.divider >= this.numbers[0].length ? 0 : 1); k++) {
                     if (k == this.divider) {
                         tr.append(HTML.divider());
                     }
@@ -179,8 +205,11 @@ var GaussianElimination;
         Matrix.prototype.columns = function () {
             return this.numbers[0].length;
         };
-        Matrix.prototype.numbers = function () {
+        Matrix.prototype.getNumbers = function () {
             return this.numbers;
+        };
+        Matrix.prototype.getDivider = function () {
+            return this.divider;
         };
         return Matrix;
     }());

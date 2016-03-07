@@ -12,6 +12,7 @@ module GaussianElimination {
 
         constructor(workspace:JQuery) {
             this.workspace = workspace;
+            this.steps = [];
         }
 
         public setup() {
@@ -42,7 +43,12 @@ module GaussianElimination {
             var operation = new Operation(this.workspace, this.initialMatrix.rows());
             operation.render();
             operation.getInput(function (operations:string[]) {
-                var matrix = new Matrix(previousStep != null ? previousStep.matrix() : this.initialMatrix, operations);
+                var prevMatrix = previousStep != null ? previousStep.matrix() : that.initialMatrix;
+                var matrix = new Matrix(that.workspace, prevMatrix.getNumbers(), prevMatrix.getDivider(), operations);
+                matrix.render();
+                var step = new Step(operation, matrix);
+                that.steps.push(step);
+                that.nextStep(step);
             });
         }
 
@@ -55,6 +61,8 @@ module GaussianElimination {
         private rowCount:number;
         private callback:Function;
         private usedRows:number[];
+        private usedFirstRows:number[];
+        private usedSecondRows:number[];
         private operations:string[];
         private node:JQuery;
         private input:JQuery;
@@ -64,6 +72,8 @@ module GaussianElimination {
             this.errorManager = new ErrorManager(this.target);
             this.rowCount = rowCount;
             this.usedRows = [];
+            this.usedFirstRows = [];
+            this.usedSecondRows = [];
             this.operations = [];
             this.createNode();
         }
@@ -103,7 +113,7 @@ module GaussianElimination {
             for (var i = 0; i < rows.length; i++) {
                 var row = parseInt(rows[i].substr(1));
                 rowNums.push(row);
-                if ($.inArray(row, this.usedRows) != -1) {
+                if ($.inArray(row, this.usedFirstRows) != -1) {
                     this.errorManager.error('This row has already appeared in a neighbouring operation: ' + row + '. Perform the same operation in the next step to avoid ambiguity');
                     this.input.addClass('error-input');
                     return false;
@@ -120,6 +130,11 @@ module GaussianElimination {
                 }
                 previousRow = row;
             }
+            if (!!new RegExp("[/\*]").exec(value) && $.inArray(row, this.usedRows) != -1) {
+                this.errorManager.error('This row has already appeared in a neighbouring operation: ' + row + '. Perform the same operation in the next step to avoid ambiguity');
+                this.input.addClass('error-input');
+                return false;
+            }
             if (!!new RegExp("/").exec(value)) {
                 var zeroRegexp = new RegExp("\\d+(\\.\\d+)?$");
                 var result = value.match(zeroRegexp);
@@ -130,6 +145,11 @@ module GaussianElimination {
                 }
             }
             this.usedRows.push(rowNums[0]);
+            this.usedFirstRows.push(rowNums[0]);
+            if(rowNums.length > 1) {
+                this.usedRows.push(rowNums[1]);
+                this.usedSecondRows.push(rowNums[1]);
+            }
             this.input.removeClass('error-input');
             this.errorManager.clear();
             return true;
@@ -184,11 +204,20 @@ module GaussianElimination {
         private divider:number;
         private node:JQuery;
 
-        constructor(target:JQuery, numbers:number[][], divider:number) {
+        constructor(target:JQuery, numbers:number[][], divider:number, operations:string[] = null) {
             this.target = target;
             this.numbers = numbers;
             this.divider = divider;
+            if(operations != null) {
+                this.parseOperations(operations);
+            }
             this.createNode();
+        }
+
+        private parseOperations(operations:string[]) {
+            for(var i = 0; i < operations.length; i++) {
+
+            }
         }
 
         private createNode() {
@@ -196,7 +225,7 @@ module GaussianElimination {
             for (var i = 0; i < this.numbers.length; i++) {
                 var tr = HTML.tr();
                 var numberCounter = 0;
-                for (var k = 0; k < this.numbers[0].length + 1; k++) {
+                for (var k = 0; k < this.numbers[0].length + (this.divider >= this.numbers[0].length ? 0 : 1); k++) {
                     if (k == this.divider) {
                         tr.append(HTML.divider());
                     } else {
@@ -221,8 +250,12 @@ module GaussianElimination {
             return this.numbers[0].length;
         }
 
-        public numbers():number[][] {
+        public getNumbers():number[][] {
             return this.numbers;
+        }
+
+        public getDivider():number {
+            return this.divider;
         }
 
     }
