@@ -4,6 +4,7 @@ html, body {
   height: 100%; }
 
 body {
+  font-family: 'PT Mono', monospace;
   background-color: #c06c84;
   box-sizing: border-box;
   position: relative;
@@ -18,9 +19,11 @@ a {
             text-decoration-color: #6c5b7b;
     text-decoration: underline; }
 
+input {
+  font-family: 'PT Mono', monospace; }
+
 #wrapper {
   box-shadow: #29112f 0 0 20px;
-  font-family: 'PT Mono', monospace;
   background-color: #355c7d;
   border-radius: 5px;
   position: absolute;
@@ -42,6 +45,11 @@ a {
 
 #workspace {
   padding: 10px; }
+  #workspace .error {
+    background-color: #7b3840;
+    color: #d9aca7;
+    padding: 20px;
+    margin: 10px; }
   #workspace .block {
     vertical-align: middle;
     display: inline-block;
@@ -76,3 +84,15 @@ a {
           border-top-color: #6c5b7b;
           border-bottom-color: #6c5b7b;
           padding: 0 4px; }
+        #workspace .block.matrix td input {
+          background-color: transparent;
+          border: solid 4px #6c5b7b;
+          text-align: center;
+          color: #f8b195;
+          padding: 8px;
+          margin: -8px; }
+          #workspace .block.matrix td input:focus {
+            border-color: #f8b195;
+            outline: none; }
+          #workspace .block.matrix td input.error {
+            border-color: #7b3840; }

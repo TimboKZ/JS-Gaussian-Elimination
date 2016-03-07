@@ -12,12 +12,35 @@
 
     <div id="buttons">
 
-        <a href="#">Reset</a><!--
+        <a href="#" id="reset">Reset</a><!--
      --><a href="#">Undo</a><!--
      --><p>By Timur Kuzhagaliyev</p>
 
     </div>
     <div id="workspace">
+
+        <div class="block matrix">
+            <table>
+                <tbody>
+                <tr>
+                    <td colspan="2">Left Matrix</td>
+                    <td class="divider"></td>
+                    <td>Right Matrix</td>
+                </tr>
+                <tr>
+                    <td><input type="number" placeholder="A - rows"></td>
+                    <td><input type="number" placeholder="B - columns"></td>
+                    <td class="divider"></td>
+                    <td><input type="number" placeholder="C - columns"></td>
+                </tr>
+                <tr>
+                    <td colspan="2">A,B > 0</td>
+                    <td class="divider"></td>
+                    <td>C >= 0</td>
+                </tr>
+                </tbody>
+            </table>
+        </div>
 
         <div class="block matrix">
             <table>

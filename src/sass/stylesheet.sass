@@ -8,6 +8,7 @@ html, body
   height: 100%
 
 body
+  font-family: 'PT Mono', monospace
   background-color: $background
   box-sizing: border-box
   position: relative
@@ -21,9 +22,11 @@ a
     text-decoration-color: $secondary
     text-decoration: underline
 
+input
+  font-family: 'PT Mono', monospace
+
 #wrapper
   box-shadow: $shadow 0 0 20px
-  font-family: 'PT Mono', monospace
   background-color: $foreground
   border-radius: 5px
   position: absolute
@@ -45,6 +48,11 @@ a
 
 #workspace
   padding: 10px
+  .error
+    background-color: $error
+    color: $error-text
+    padding: 20px
+    margin: 10px
   .block
     //background-color: $secondary
     vertical-align: middle
@@ -80,3 +88,15 @@ a
           border-top-color: $secondary
           border-bottom-color: $secondary
           padding: 0 4px
+        input
+          background-color: transparent
+          border: solid 4px $secondary
+          text-align: center
+          color: $primary
+          padding: 8px
+          margin: -8px
+          &:focus
+            border-color: $primary
+            outline: none
+          &.error
+            border-color: $error
