@@ -26,7 +26,7 @@ var GaussianElimination;
         };
         Core.prototype.start = function (numbers, divider) {
             this.workspace.html('');
-            this.initialMatrix = new Matrix(this.workspace, numbers.slice(), divider);
+            this.initialMatrix = new Matrix(this.workspace, numbers, divider);
             this.initialMatrix.render();
             this.nextStep(null);
         };
@@ -51,7 +51,7 @@ var GaussianElimination;
                     string += ' ' + that.initialMatrix.getNumbers()[i];
                 }
                 console.log(string);
-                var matrix = new Matrix(that.workspace, prevMatrix.getNumbers().slice(0), prevMatrix.getDivider(), operations);
+                var matrix = new Matrix(that.workspace, prevMatrix.getNumbers(), prevMatrix.getDivider(), operations);
                 matrix.render();
                 var step = new Step(that.currentOperation, matrix);
                 that.steps.push(step);
@@ -280,7 +280,7 @@ var GaussianElimination;
             return this.numbers[0].length;
         };
         Matrix.prototype.getNumbers = function () {
-            return this.numbers;
+            return this.numbers.slice(0);
         };
         Matrix.prototype.getDivider = function () {
             return this.divider;

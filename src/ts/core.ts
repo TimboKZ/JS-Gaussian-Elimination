@@ -35,7 +35,7 @@ module GaussianElimination {
 
         public start(numbers:number[][], divider:number) {
             this.workspace.html('');
-            this.initialMatrix = new Matrix(this.workspace, numbers.slice(), divider);
+            this.initialMatrix = new Matrix(this.workspace, numbers, divider);
             this.initialMatrix.render();
             this.nextStep(null);
         }
@@ -61,7 +61,7 @@ module GaussianElimination {
                     string += ' ' + that.initialMatrix.getNumbers()[i];
                 }
                 console.log(string);
-                var matrix = new Matrix(that.workspace, prevMatrix.getNumbers().slice(0), prevMatrix.getDivider(), operations);
+                var matrix = new Matrix(that.workspace, prevMatrix.getNumbers(), prevMatrix.getDivider(), operations);
                 matrix.render();
                 var step = new Step(that.currentOperation, matrix);
                 that.steps.push(step);
@@ -327,7 +327,7 @@ module GaussianElimination {
         }
 
         public getNumbers():number[][] {
-            return this.numbers;
+            return this.numbers.slice(0);
         }
 
         public getDivider():number {
