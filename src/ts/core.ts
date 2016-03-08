@@ -244,8 +244,11 @@ module GaussianElimination {
                     }
                     var secondPart = operation.split(split)[1];
                     var numberRegexp = new RegExp("^\\d+(\\.\\d+)?");
-                    var number = parseFloat(secondPart.match(numberRegexp)[0]);
-                    if(isNaN(number)) number = 1;
+                    var numberArray = secondPart.match(numberRegexp);
+                    var number = 1;
+                    if(numberArray != null && numberArray.length > 0) {
+                        number = parseFloat(numberArray[0]);
+                    }
                     for(var k = 0; k < this.numbers[0].length; k++) {
                         this.numbers[firstRow - 1][k] = this.numbers[firstRow - 1][k] + sign * this.numbers[secondRow - 1][k] * number;
                     }
