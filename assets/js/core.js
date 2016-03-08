@@ -35,7 +35,7 @@ var GaussianElimination;
             var operation = new Operation(this.workspace, this.initialMatrix.rows());
             operation.render();
             operation.getInput(function (operations) {
-                var prevMatrix = previousStep != null ? previousStep.matrix() : that.initialMatrix;
+                var prevMatrix = previousStep != null ? previousStep.getMatrix() : that.initialMatrix;
                 var matrix = new Matrix(that.workspace, prevMatrix.getNumbers(), prevMatrix.getDivider(), operations);
                 matrix.render();
                 var step = new Step(operation, matrix);
@@ -70,7 +70,7 @@ var GaussianElimination;
             this.input.keyup(function (e) {
                 if (e.which == 13) {
                     if (that.validateOperation()) {
-                        that.addOperation();
+                        that.addOperation(!e.ctrlKey);
                     }
                 }
             });
@@ -131,12 +131,12 @@ var GaussianElimination;
             this.errorManager.clear();
             return true;
         };
-        Operation.prototype.addOperation = function () {
+        Operation.prototype.addOperation = function (complete) {
             var value = this.input.val();
             this.input.val('');
             this.node.find('.operations').append('<div class="single-operation">' + value + '</div>');
             this.operations.push(value.toLowerCase().trim().replace(/\s/g, ''));
-            if (this.operations.length == this.rowCount) {
+            if (complete || this.operations.length == this.rowCount) {
                 this.complete();
             }
         };
@@ -154,10 +154,10 @@ var GaussianElimination;
             this.operation = operation;
             this.matrix = matrix;
         }
-        Step.prototype.operation = function () {
+        Step.prototype.getOperation = function () {
             return this.operation;
         };
-        Step.prototype.matrix = function () {
+        Step.prototype.getMatrix = function () {
             return this.matrix;
         };
         return Step;
@@ -176,6 +176,42 @@ var GaussianElimination;
         }
         Matrix.prototype.parseOperations = function (operations) {
             for (var i = 0; i < operations.length; i++) {
+                var operation = operations[i];
+                var rowRegexp = new RegExp("r(\\d+)", "g");
+                var rows = operation.match(rowRegexp);
+                if (!!new RegExp("[/\*]").exec(operation)) {
+                    var row = parseInt(rows[0].substr(1));
+                    var numberRegexp = new RegExp("\\d+(\\.\\d+)?$");
+                    var number = parseFloat(operation.match(numberRegexp)[0]);
+                    if (!!new RegExp("[/]").exec(operation)) {
+                        for (var k = 0; k < this.numbers[0].length; k++) {
+                            this.numbers[row - 1][k] = this.numbers[row - 1][k] / number;
+                        }
+                    }
+                    if (!!new RegExp("[\*]").exec(operation)) {
+                        for (var k = 0; k < this.numbers[0].length; k++) {
+                            this.numbers[row - 1][k] = this.numbers[row - 1][k] * number;
+                        }
+                    }
+                }
+                else {
+                    var firstRow = parseInt(rows[0].substr(1));
+                    var secondRow = parseInt(rows[1].substr(1));
+                    var sign = 1;
+                    var split = '+';
+                    if (!!new RegExp("[\-]").exec(operation)) {
+                        sign = -1;
+                        split = '-';
+                    }
+                    var secondPart = operation.split(split)[1];
+                    var numberRegexp = new RegExp("^\\d+(\\.\\d+)?");
+                    var number = parseFloat(secondPart.match(numberRegexp)[0]);
+                    if (isNaN(number))
+                        number = 1;
+                    for (var k = 0; k < this.numbers[0].length; k++) {
+                        this.numbers[firstRow - 1][k] = this.numbers[firstRow - 1][k] + sign * this.numbers[secondRow - 1][k] * number;
+                    }
+                }
             }
         };
         Matrix.prototype.createNode = function () {
