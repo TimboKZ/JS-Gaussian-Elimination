@@ -25,21 +25,35 @@ var GaussianElimination;
             startMatrix.getInput();
         };
         Core.prototype.start = function (numbers, divider) {
-            console.log(this);
             this.workspace.html('');
-            this.initialMatrix = new Matrix(this.workspace, numbers, divider);
+            this.initialMatrix = new Matrix(this.workspace, numbers.slice(), divider);
             this.initialMatrix.render();
             this.nextStep(null);
         };
+        // TODO: Fix a bug with the intial matrix getting updated
         Core.prototype.nextStep = function (previousStep) {
             var that = this;
-            var operation = new Operation(this.workspace, this.initialMatrix.rows());
-            operation.render();
-            operation.getInput(function (operations) {
+            this.currentOperation = new Operation(this.workspace, this.initialMatrix.rows());
+            this.currentOperation.render();
+            this.currentOperation.getInput(function (operations) {
                 var prevMatrix = previousStep != null ? previousStep.getMatrix() : that.initialMatrix;
-                var matrix = new Matrix(that.workspace, prevMatrix.getNumbers(), prevMatrix.getDivider(), operations);
+                console.log('Step #: ' + (that.steps.length + 1));
+                console.log('Matrix used: ' + (previousStep != null ? 'Previous' : 'Initial'));
+                console.log('Prev numbers: ');
+                var string = ' ';
+                for (var i = 0; i < prevMatrix.getNumbers().length; i++) {
+                    string += ' ' + prevMatrix.getNumbers()[i];
+                }
+                console.log(string);
+                console.log('Initial numbers: ');
+                string = ' ';
+                for (var i = 0; i < that.initialMatrix.getNumbers().length; i++) {
+                    string += ' ' + that.initialMatrix.getNumbers()[i];
+                }
+                console.log(string);
+                var matrix = new Matrix(that.workspace, prevMatrix.getNumbers().slice(0), prevMatrix.getDivider(), operations);
                 matrix.render();
-                var step = new Step(operation, matrix);
+                var step = new Step(that.currentOperation, matrix);
                 that.steps.push(step);
                 that.nextStep(step);
             });
@@ -49,6 +63,15 @@ var GaussianElimination;
                 this.errorManager.error('Nothing to undo!');
                 return;
             }
+            if (this.currentOperation != null) {
+                this.currentOperation.getNode().remove();
+                this.currentOperation = null;
+            }
+            var step = this.steps.pop();
+            step.getOperation().getNode().remove();
+            step.getMatrix().getNode().remove();
+            var lastStep = this.steps.length > 0 ? this.steps[this.steps.length - 2] : null;
+            this.nextStep(lastStep);
         };
         Core.prototype.showHelp = function () {
             this.errorManager.error('Rule of thumb: Press <code>Enter</code> to jump to next input/proceed to the next step.<br><br>' +
