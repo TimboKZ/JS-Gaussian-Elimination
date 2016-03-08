@@ -31,6 +31,10 @@ input {
   input.error-input {
     border-color: #7b3840; }
 
+code {
+  background-color: rgba(0, 0, 0, 0.1);
+  padding: 4px 6px; }
+
 #wrapper {
   box-shadow: #29112f 0 0 20px;
   background-color: #355c7d;

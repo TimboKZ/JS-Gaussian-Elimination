@@ -7,6 +7,7 @@ var GaussianElimination;
     var Core = (function () {
         function Core(workspace) {
             this.workspace = workspace;
+            this.errorManager = new ErrorManager(this.workspace);
             this.steps = [];
         }
         Core.prototype.setup = function () {
@@ -43,6 +44,17 @@ var GaussianElimination;
                 that.nextStep(step);
             });
         };
+        Core.prototype.undoLastStep = function () {
+            if (this.steps.length < 1) {
+                this.errorManager.error('Nothing to undo!');
+                return;
+            }
+        };
+        Core.prototype.showHelp = function () {
+            this.errorManager.error('Rule of thumb: Press <code>Enter</code> to jump to next input/proceed to the next step.<br><br>' +
+                'When adding an operation, press <code>Enter</code> to apply your operation or <code>Ctrl + Enter</code> to add another operation in the same step. The amount of operations must be less than or equal to the number of rows.<br><br>' +
+                'Operations can have 2 formats: <code>R# (+ or -) [number] R#</code> or <code>R# (/ or *) (number)</code>, where <code>#</code> is the number of the row, <code>number</code> is any number, <code>()</code> stands for required and <code>[]</code> stands for optional. For example, if you want to subtract row 3 from row 1, you would write <code>R1 - R3</code> and if you would want to multiply row 4 by 7.5, you would write <code>R4 * 7.5</code>.');
+        };
         return Core;
     }());
     GaussianElimination.Core = Core;
@@ -53,7 +65,6 @@ var GaussianElimination;
             this.rowCount = rowCount;
             this.usedRows = [];
             this.usedFirstRows = [];
-            this.usedSecondRows = [];
             this.operations = [];
             this.createNode();
         }
@@ -125,7 +136,6 @@ var GaussianElimination;
             this.usedFirstRows.push(rowNums[0]);
             if (rowNums.length > 1) {
                 this.usedRows.push(rowNums[1]);
-                this.usedSecondRows.push(rowNums[1]);
             }
             this.input.removeClass('error-input');
             this.errorManager.clear();
@@ -146,6 +156,9 @@ var GaussianElimination;
         };
         Operation.prototype.createNode = function () {
             this.node = HTML.operationBlock();
+        };
+        Operation.prototype.getNode = function () {
+            return this.node;
         };
         return Operation;
     }());
@@ -248,6 +261,9 @@ var GaussianElimination;
         };
         Matrix.prototype.getDivider = function () {
             return this.divider;
+        };
+        Matrix.prototype.getNode = function () {
+            return this.node;
         };
         return Matrix;
     }());
@@ -476,11 +492,3 @@ var GaussianElimination;
     }());
     GaussianElimination.HTML = HTML;
 })(GaussianElimination || (GaussianElimination = {}));
-$(document).ready(function () {
-    var core = new GaussianElimination.Core($('#workspace'));
-    core.setup();
-    $('#reset').click(function () {
-        core = new GaussianElimination.Core($('#workspace'));
-        core.setup();
-    });
-});

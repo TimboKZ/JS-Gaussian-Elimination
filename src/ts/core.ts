@@ -7,11 +7,13 @@ module GaussianElimination {
     export class Core {
 
         private workspace:JQuery;
+        private errorManager:ErrorManager;
         private initialMatrix:Matrix;
         private steps:Step[];
 
         constructor(workspace:JQuery) {
             this.workspace = workspace;
+            this.errorManager = new ErrorManager(this.workspace);
             this.steps = [];
         }
 
@@ -52,6 +54,19 @@ module GaussianElimination {
             });
         }
 
+        public undoLastStep() {
+            if(this.steps.length < 1) {
+                this.errorManager.error('Nothing to undo!');
+                return;
+            }
+        }
+
+        public showHelp() {
+            this.errorManager.error('Rule of thumb: Press <code>Enter</code> to jump to next input/proceed to the next step.<br><br>' +
+                'When adding an operation, press <code>Enter</code> to apply your operation or <code>Ctrl + Enter</code> to add another operation in the same step. The amount of operations must be less than or equal to the number of rows.<br><br>' +
+                'Operations can have 2 formats: <code>R# (+ or -) [number] R#</code> or <code>R# (/ or *) (number)</code>, where <code>#</code> is the number of the row, <code>number</code> is any number, <code>()</code> stands for required and <code>[]</code> stands for optional. For example, if you want to subtract row 3 from row 1, you would write <code>R1 - R3</code> and if you would want to multiply row 4 by 7.5, you would write <code>R4 * 7.5</code>.');
+        }
+
     }
 
     class Operation {
@@ -62,7 +77,6 @@ module GaussianElimination {
         private callback:Function;
         private usedRows:number[];
         private usedFirstRows:number[];
-        private usedSecondRows:number[];
         private operations:string[];
         private node:JQuery;
         private input:JQuery;
@@ -73,7 +87,6 @@ module GaussianElimination {
             this.rowCount = rowCount;
             this.usedRows = [];
             this.usedFirstRows = [];
-            this.usedSecondRows = [];
             this.operations = [];
             this.createNode();
         }
@@ -98,7 +111,7 @@ module GaussianElimination {
             });
         }
 
-        public validateOperation():boolean {
+        private validateOperation():boolean {
             var value = this.input.val().toLowerCase().trim().replace(/\s/g, '');
             var regexp = new RegExp("^(r\\d+[/\*]\\d+(\\.\\d+)?|r\\d+[\+\-](\\d+(\\.\\d+)?|r\\d+|\\d+(\\.\\d+)?r\\d+))$");
             if (!regexp.exec(value)) {
@@ -146,16 +159,15 @@ module GaussianElimination {
             }
             this.usedRows.push(rowNums[0]);
             this.usedFirstRows.push(rowNums[0]);
-            if(rowNums.length > 1) {
+            if (rowNums.length > 1) {
                 this.usedRows.push(rowNums[1]);
-                this.usedSecondRows.push(rowNums[1]);
             }
             this.input.removeClass('error-input');
             this.errorManager.clear();
             return true;
         }
 
-        public addOperation(complete:boolean) {
+        private addOperation(complete:boolean) {
             var value = this.input.val();
             this.input.val('');
             this.node.find('.operations').append('<div class="single-operation">' + value + '</div>');
@@ -165,13 +177,17 @@ module GaussianElimination {
             }
         }
 
-        public complete() {
+        private complete() {
             this.input.remove();
             this.callback(this.operations);
         }
 
-        public createNode() {
+        private createNode() {
             this.node = HTML.operationBlock();
+        }
+
+        public getNode() :JQuery {
+            return this.node;
         }
 
 
@@ -208,28 +224,28 @@ module GaussianElimination {
             this.target = target;
             this.numbers = numbers;
             this.divider = divider;
-            if(operations != null) {
+            if (operations != null) {
                 this.parseOperations(operations);
             }
             this.createNode();
         }
 
         private parseOperations(operations:string[]) {
-            for(var i = 0; i < operations.length; i++) {
+            for (var i = 0; i < operations.length; i++) {
                 var operation = operations[i];
                 var rowRegexp = new RegExp("r(\\d+)", "g");
                 var rows = operation.match(rowRegexp);
-                if(!!new RegExp("[/\*]").exec(operation)) {
+                if (!!new RegExp("[/\*]").exec(operation)) {
                     var row = parseInt(rows[0].substr(1));
                     var numberRegexp = new RegExp("\\d+(\\.\\d+)?$");
                     var number = parseFloat(operation.match(numberRegexp)[0]);
-                    if(!!new RegExp("[/]").exec(operation)) {
-                        for(var k = 0; k < this.numbers[0].length; k++) {
+                    if (!!new RegExp("[/]").exec(operation)) {
+                        for (var k = 0; k < this.numbers[0].length; k++) {
                             this.numbers[row - 1][k] = this.numbers[row - 1][k] / number;
                         }
                     }
-                    if(!!new RegExp("[\*]").exec(operation)) {
-                        for(var k = 0; k < this.numbers[0].length; k++) {
+                    if (!!new RegExp("[\*]").exec(operation)) {
+                        for (var k = 0; k < this.numbers[0].length; k++) {
                             this.numbers[row - 1][k] = this.numbers[row - 1][k] * number;
                         }
                     }
@@ -238,7 +254,7 @@ module GaussianElimination {
                     var secondRow = parseInt(rows[1].substr(1));
                     var sign = 1;
                     var split = '+';
-                    if(!!new RegExp("[\-]").exec(operation)) {
+                    if (!!new RegExp("[\-]").exec(operation)) {
                         sign = -1;
                         split = '-';
                     }
@@ -246,10 +262,10 @@ module GaussianElimination {
                     var numberRegexp = new RegExp("^\\d+(\\.\\d+)?");
                     var numberArray = secondPart.match(numberRegexp);
                     var number = 1;
-                    if(numberArray != null && numberArray.length > 0) {
+                    if (numberArray != null && numberArray.length > 0) {
                         number = parseFloat(numberArray[0]);
                     }
-                    for(var k = 0; k < this.numbers[0].length; k++) {
+                    for (var k = 0; k < this.numbers[0].length; k++) {
                         this.numbers[firstRow - 1][k] = this.numbers[firstRow - 1][k] + sign * this.numbers[secondRow - 1][k] * number;
                     }
                 }
@@ -292,6 +308,10 @@ module GaussianElimination {
 
         public getDivider():number {
             return this.divider;
+        }
+
+        public getNode() :JQuery {
+            return this.node;
         }
 
     }
@@ -548,14 +568,3 @@ module GaussianElimination {
     }
 
 }
-
-$(document).ready(function () {
-
-    var core = new GaussianElimination.Core($('#workspace'));
-    core.setup();
-    $('#reset').click(function () {
-        core = new GaussianElimination.Core($('#workspace'));
-        core.setup();
-    });
-
-});

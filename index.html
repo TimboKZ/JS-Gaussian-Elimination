@@ -13,42 +13,14 @@
     <div id="buttons">
 
         <a href="#" id="reset">Reset</a><!--
-     --><a href="#">Undo</a><!--
+     --><a href="#" id="undo">Undo</a><!--
+     --><a href="#" id="help">Help</a><!--
      --><p>By Timur Kuzhagaliyev</p>
 
     </div>
     <div id="workspace">
 
-        <div class="block matrix">
-            <table>
-                <tbody>
-                <tr>
-                    <td colspan="2">Left Matrix</td>
-                    <td class="divider"></td>
-                    <td>Right Matrix</td>
-                </tr>
-                <tr>
-                    <td><input type="number" placeholder="A - rows"></td>
-                    <td><input type="number" placeholder="B - columns"></td>
-                    <td class="divider"></td>
-                    <td><input type="number" placeholder="C - columns"></td>
-                </tr>
-                <tr>
-                    <td colspan="2">A,B > 0</td>
-                    <td class="divider"></td>
-                    <td>C >= 0</td>
-                </tr>
-                </tbody>
-            </table>
-        </div>
-
-        <div class="block operation">
-            <div class="operations">
-                <input class="single-operation" placeholder="enter operation">
-                <div class="single-operation"></div>
-            </div>
-            <div class="arrow"></div>
-        </div>
+        <noscript><div class="error">You need to enable JavaScript for this plugin to work.</div></noscript>
 
     </div>
 
@@ -56,6 +28,24 @@
 
 <script type="application/javascript" src="http://code.jquery.com/jquery-2.2.1.js"></script>
 <script type="application/javascript" src="assets/js/core.js"></script>
+<script type="application/javascript">
+    $(document).ready(function () {
+
+        var core = new GaussianElimination.Core($('#workspace'));
+        core.setup();
+        $('#reset').click(function () {
+            core = new GaussianElimination.Core($('#workspace'));
+            core.setup();
+        });
+        $('#undo').click(function () {
+            core.undoLastStep();
+        });
+        $('#help').click(function () {
+            core.showHelp();
+        });
+
+    });
+</script>
 
 </body>
 </html>
