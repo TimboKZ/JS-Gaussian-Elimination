@@ -37,58 +37,68 @@ module GaussianElimination {
             this.workspace.html('');
             this.initialMatrix = new Matrix(this.workspace, numbers, divider);
             this.initialMatrix.render();
-            this.nextStep(null);
+            this.nextStep(this.initialMatrix);
         }
 
         // TODO: Fix a bug with the intial matrix getting updated
-        public nextStep(previousStep:Step) {
+        public nextStep(prevMatrix:Matrix) {
             var that = this;
             this.currentOperation = new Operation(this.workspace, this.initialMatrix.rows());
             this.currentOperation.render();
             this.currentOperation.getInput(function (operations:string[]) {
-                var prevMatrix = previousStep != null ? previousStep.getMatrix() : that.initialMatrix;
-                console.log('Step #: ' + (that.steps.length + 1));
-                console.log('Matrix used: ' + (previousStep != null ? 'Previous' : 'Initial'));
-                console.log('Prev numbers: ');
-                var string = ' ';
-                for(var i = 0; i < prevMatrix.getNumbers().length; i++) {
-                    string += ' ' + prevMatrix.getNumbers()[i];
-                }
-                console.log(string);
-                console.log('Initial numbers: ');
-                string = ' ';
-                for(var i = 0; i < that.initialMatrix.getNumbers().length; i++) {
-                    string += ' ' + that.initialMatrix.getNumbers()[i];
-                }
-                console.log(string);
                 var matrix = new Matrix(that.workspace, prevMatrix.getNumbers(), prevMatrix.getDivider(), operations);
                 matrix.render();
                 var step = new Step(that.currentOperation, matrix);
                 that.steps.push(step);
-                that.nextStep(step);
+                that.nextStep(matrix);
             });
         }
 
         public undoLastStep() {
-            if(this.steps.length < 1) {
+            if (this.steps.length < 1) {
                 this.errorManager.error('Nothing to undo!');
                 return;
             }
-            if(this.currentOperation != null) {
+            if (this.currentOperation != null) {
                 this.currentOperation.getNode().remove();
                 this.currentOperation = null;
             }
             var step = this.steps.pop();
             step.getOperation().getNode().remove();
             step.getMatrix().getNode().remove();
-            var lastStep = this.steps.length > 0 ? this.steps[this.steps.length - 2] : null;
-            this.nextStep(lastStep);
+            var lastStep = this.steps.length > 0 ? this.steps[this.steps.length - 1] : null;
+            this.nextStep(lastStep != null ? lastStep.getMatrix() : this.initialMatrix);
         }
 
         public showHelp() {
             this.errorManager.error('Rule of thumb: Press <code>Enter</code> to jump to next input/proceed to the next step.<br><br>' +
                 'When adding an operation, press <code>Enter</code> to apply your operation or <code>Ctrl + Enter</code> to add another operation in the same step. The amount of operations must be less than or equal to the number of rows.<br><br>' +
                 'Operations can have 2 formats: <code>R# (+ or -) [number] R#</code> or <code>R# (/ or *) (number)</code>, where <code>#</code> is the number of the row, <code>number</code> is any number, <code>()</code> stands for required and <code>[]</code> stands for optional. For example, if you want to subtract row 3 from row 1, you would write <code>R1 - R3</code> and if you would want to multiply row 4 by 7.5, you would write <code>R4 * 7.5</code>.');
+        }
+
+        // For debugging purposes
+        public logSteps() {
+            console.log(" HELLO WORLD ");
+            this.printMatrix(this.initialMatrix);
+            for (var i = 0; i < this.steps.length; i++) {
+                console.log(this.steps[i].getOperation().getOperations()[0]);
+                this.printMatrix(this.steps[i].getMatrix());
+            }
+        }
+
+        public printMatrix(matrix:Matrix) {
+            var numbers = matrix.getNumbers();
+            console.log("╔═══╗");
+            for (var i = 0; i < numbers.length; i++) {
+                var string = "║";
+                for (var k = 0; k < numbers[0].length; k++) {
+                    if (k != 0) string += " ";
+                    string += numbers[i][k];
+                }
+                string += "║";
+                console.log(string);
+            }
+            console.log("╚═══╝");
         }
 
     }
@@ -210,10 +220,13 @@ module GaussianElimination {
             this.node = HTML.operationBlock();
         }
 
-        public getNode() :JQuery {
+        public getNode():JQuery {
             return this.node;
         }
 
+        public getOperations():String[] {
+            return this.operations;
+        }
 
     }
 
@@ -246,7 +259,14 @@ module GaussianElimination {
 
         constructor(target:JQuery, numbers:number[][], divider:number, operations:string[] = null) {
             this.target = target;
-            this.numbers = numbers;
+            var numbersCopy = [];
+            for(var i = 0; i < numbers.length; i++) {
+                numbersCopy[i] = [];
+                for(var k = 0; k < numbers[0].length; k++) {
+                    numbersCopy[i][k] = numbers[i][k];
+                }
+            }
+            this.numbers = numbersCopy;
             this.divider = divider;
             if (operations != null) {
                 this.parseOperations(operations);
@@ -334,7 +354,7 @@ module GaussianElimination {
             return this.divider;
         }
 
-        public getNode() :JQuery {
+        public getNode():JQuery {
             return this.node;
         }
 
